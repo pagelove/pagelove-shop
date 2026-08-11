@@ -37,6 +37,18 @@
     <meta itemprop="method" content="GET"><meta itemprop="action" content="deny">
   </div>
 
+  <!-- SHOP SETTINGS. Composition may use the celld origin, but the source record
+       is not a public endpoint. The matching admin trigger authenticates the
+       selector PUT made by the Settings page. -->
+  <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+    <meta itemprop="actor" content="*"><meta itemprop="resource" content="/data/settings/*">
+    <meta itemprop="method" content="PUT"><meta itemprop="action" content="allow">
+  </div>
+  <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+    <meta itemprop="actor" content="*"><meta itemprop="resource" content="/data/settings/*">
+    <meta itemprop="method" content="GET"><meta itemprop="action" content="deny">
+  </div>
+
   <!-- PRIVATE CONFIG. The admin Basic credential lives in /private/ and is
        protected by this rule. Stripe and Pagelove API keys live only in encrypted
        private exe.dev integrations. Deny wins over the broad public GET allow. -->

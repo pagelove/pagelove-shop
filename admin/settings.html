@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:e="https://pagelove.org/Binding/Sessel" xmlns:p="https://pagelove.org/1.0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings — Pagelove Shop admin</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<body e:settings="${[itemtype='https://shop.example/ShopSettings']}.first()">
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap" data-admin-settings>
+    <p:stamp settings></p:stamp>
+    <div class="admin-head"><h1>Settings</h1></div>
+    <form class="panel" data-settings-form style="max-width:720px">
+      <h2>Checkout service</h2>
+      <label for="checkout-endpoint">celld origin</label>
+      <input id="checkout-endpoint" name="checkoutEndpoint" type="url" required inputmode="url" autocomplete="url" placeholder="https://your-shop.exe.xyz">
+      <p class="note">Enter the public origin of the celld service. Do not include <code>/checkout</code>, a query string or a trailing path.</p>
+      <button class="btn" type="submit" style="margin-top:1rem">Save settings</button>
+      <p class="note" data-settings-note role="status" aria-live="polite"></p>
+    </form>
+  </main>
+  <footer class="site-foot">Pagelove Shop · admin</footer>
+</body>
+</html>

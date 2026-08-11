@@ -12,6 +12,7 @@ fi
 WEBDAV_URL=${PAGELOVE_WEBDAV_URL%/}/
 FILES_MANIFEST=${PAGELOVE_DEPLOY_MANIFEST:-"$PROJECT_DIR/ops/pagelove-files.txt"}
 DIRECTORIES_MANIFEST=${PAGELOVE_DIRECTORIES_MANIFEST:-"$PROJECT_DIR/ops/pagelove-directories.txt"}
+SEED_MANIFEST=${PAGELOVE_SEED_MANIFEST:-"$PROJECT_DIR/ops/pagelove-seed-files.txt"}
 
 if [ -n "${PAGELOVE_DEPLOY_FILES:-}" ]; then
   FILES=$PAGELOVE_DEPLOY_FILES
@@ -20,6 +21,18 @@ elif [ -f "$FILES_MANIFEST" ]; then
 else
   printf 'Deployment manifest not found: %s\n' "$FILES_MANIFEST" >&2
   exit 1
+fi
+
+if [ "${PAGELOVE_SEED_FILES+x}" = x ]; then
+  SEED_FILES=$PAGELOVE_SEED_FILES
+elif [ -n "${PAGELOVE_DEPLOY_FILES:-}" ]; then
+  # An explicit deployment file list means exactly that list. This keeps helper
+  # deployments, such as the generated admin credential, isolated.
+  SEED_FILES=
+elif [ -f "$SEED_MANIFEST" ]; then
+  SEED_FILES=$(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$SEED_MANIFEST")
+else
+  SEED_FILES=
 fi
 
 if [ -f "$DIRECTORIES_MANIFEST" ]; then
@@ -52,7 +65,7 @@ validate_relative_path() {
 
 mkdir -p "$BACKUP_DIR"
 
-for path in $FILES; do
+for path in $FILES $SEED_FILES; do
   validate_relative_path "$path"
   if [ ! -f "$PROJECT_DIR/$path" ]; then
     printf 'Deployment file not found: %s\n' "$PROJECT_DIR/$path" >&2
@@ -106,12 +119,73 @@ for path in $DIRECTORIES; do
   ensure_collection "$path"
 done
 
-for path in $FILES; do
+for path in $FILES $SEED_FILES; do
   parent_dir=${path%/*}
   if [ "$parent_dir" != "$path" ]; then
     ensure_collection "$parent_dir"
   fi
 done
+
+content_type_for() {
+  case "$1" in
+    *.css) printf 'text/css; charset=utf-8' ;;
+    *.js|*.mjs) printf 'text/javascript; charset=utf-8' ;;
+    *.json) printf 'application/json' ;;
+    *) printf 'text/html; charset=utf-8' ;;
+  esac
+}
+
+# Seed files belong to the running shop after their first creation. In
+# particular, deployments must not reset the celld origin saved by an admin.
+if [ "${PAGELOVE_VERIFY_ONLY:-0}" != 1 ]; then
+  for path in $SEED_FILES; do
+    response_file="$BACKUP_DIR/seed-get-response.html"
+    status=$(pagelove_curl -sS -o "$response_file" -w '%{http_code}' \
+      "${WEBDAV_URL}${path}")
+    case "$status" in
+      2??)
+        printf 'SEED %s -> already present, left unchanged\n' "$path"
+        ;;
+      404)
+        content_type=$(content_type_for "$path")
+        status=$(pagelove_curl -sS -o "$BACKUP_DIR/seed-put-response.html" -w '%{http_code}' \
+          -X PUT "${WEBDAV_URL}${path}" \
+          -H 'If-None-Match: *' \
+          -H "Content-Type: $content_type" \
+          --data-binary "@$PROJECT_DIR/$path")
+        case "$status" in
+          2??)
+            verify_file="$BACKUP_DIR/seed-verify.html"
+            verify_status=$(pagelove_curl -sS -o "$verify_file" -w '%{http_code}' \
+              "${WEBDAV_URL}${path}")
+            if [ "$verify_status" -lt 200 ] || [ "$verify_status" -ge 300 ]; then
+              printf 'Seed read-back GET %s failed with HTTP %s\n' "$path" "$verify_status" >&2
+              exit 1
+            fi
+            if ! cmp -s "$PROJECT_DIR/$path" "$verify_file"; then
+              printf 'Seed read-back mismatch: %s\n' "$path" >&2
+              exit 1
+            fi
+            printf 'SEED %s -> created and verified\n' "$path"
+            ;;
+          412)
+            printf 'SEED %s -> created concurrently, left unchanged\n' "$path"
+            ;;
+          *)
+            printf 'Seed PUT %s failed with HTTP %s\n' "$path" "$status" >&2
+            sed -n '1,20p' "$BACKUP_DIR/seed-put-response.html" >&2
+            exit 1
+            ;;
+        esac
+        ;;
+      *)
+        printf 'Seed GET %s failed with HTTP %s\n' "$path" "$status" >&2
+        sed -n '1,20p' "$response_file" >&2
+        exit 1
+        ;;
+    esac
+  done
+fi
 
 if [ "${PAGELOVE_SKIP_BACKUP:-0}" != 1 ]; then
   for path in $FILES; do
@@ -140,12 +214,7 @@ fi
 if [ "${PAGELOVE_VERIFY_ONLY:-0}" != 1 ]; then
   for path in $FILES; do
     response_file="$BACKUP_DIR/put-response.html"
-    content_type='text/html; charset=utf-8'
-    case "$path" in
-      *.css) content_type='text/css; charset=utf-8' ;;
-      *.js|*.mjs) content_type='text/javascript; charset=utf-8' ;;
-      *.json) content_type='application/json' ;;
-    esac
+    content_type=$(content_type_for "$path")
     status=$(pagelove_curl -sS -o "$response_file" -w '%{http_code}' \
       -X PUT "${WEBDAV_URL}${path}" \
       -H "Content-Type: $content_type" \
@@ -187,5 +256,8 @@ done
 
 rm -f "$BACKUP_DIR/get-response.html" \
   "$BACKUP_DIR/mkcol-response.html" \
-  "$BACKUP_DIR/put-response.html"
+  "$BACKUP_DIR/put-response.html" \
+  "$BACKUP_DIR/seed-get-response.html" \
+  "$BACKUP_DIR/seed-put-response.html" \
+  "$BACKUP_DIR/seed-verify.html"
 printf 'Backup: %s\n' "$BACKUP_DIR"

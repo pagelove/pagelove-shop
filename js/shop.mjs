@@ -15,9 +15,13 @@
 const BASKET_URL = '/basket.html';
 const BASKET_SEL = '#basket';
 const ORDER_TYPE = 'https://shop.example/Order';
-const CHECKOUT_ENDPOINT = typeof document === 'undefined'
+const SETTINGS_URL = '/data/settings/shop.html';
+const SETTINGS_TYPE = 'https://shop.example/ShopSettings';
+
+const checkoutEndpoint = () => typeof document === 'undefined'
   ? ''
-  : document.querySelector('meta[name="stripe-checkout-endpoint"]')?.content || '';
+  : document.querySelector(`[itemtype="${SETTINGS_TYPE}"] [itemprop="checkoutEndpoint"]`)
+    ?.getAttribute('content')?.trim() || '';
 
 const money = (pence) => '£' + (pence / 100).toFixed(2);
 const el = (tag, attrs = {}, ...kids) => {
@@ -245,14 +249,15 @@ async function checkoutPage() {
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true; note.removeAttribute('data-tone'); note.textContent = 'Opening secure payment…';
     const f = (n) => form.elements[n].value.trim();
-    if (!CHECKOUT_ENDPOINT || CHECKOUT_ENDPOINT.includes('YOUR-SUBDOMAIN')) {
+    const configuredEndpoint = checkoutEndpoint();
+    if (!configuredEndpoint) {
       btn.disabled = false;
       note.setAttribute('data-tone', 'err');
       note.textContent = 'Secure checkout is not configured yet.';
       return;
     }
     try {
-      const endpoint = new URL('/checkout', CHECKOUT_ENDPOINT);
+      const endpoint = new URL('/checkout', configuredEndpoint);
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -645,6 +650,70 @@ function adminProducts() {
 }
 
 
+// ---- admin: settings --------------------------------------------------------
+// The setting document is seeded once by deployment and then owned by the admin
+// UI. A selector PUT changes only the public celld origin, so normal application
+// deployments cannot overwrite an administrator's saved value.
+function adminSettings() {
+  const root = document.querySelector('[data-admin-settings]');
+  if (!root) return;
+  const form = root.querySelector('[data-settings-form]');
+  const input = form.elements.checkoutEndpoint;
+  const note = root.querySelector('[data-settings-note]');
+  const stored = root.querySelector(`[itemtype="${SETTINGS_TYPE}"] [itemprop="checkoutEndpoint"]`);
+
+  if (!stored) {
+    input.disabled = true;
+    form.querySelector('button[type=submit]').disabled = true;
+    note.setAttribute('data-tone', 'err');
+    note.textContent = 'The shop settings record is missing. Run the Pagelove deployment once to create it.';
+    return;
+  }
+  input.value = stored.getAttribute('content') || '';
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = form.querySelector('button[type=submit]');
+    let url;
+    try {
+      url = new URL(input.value.trim());
+      if (!['http:', 'https:'].includes(url.protocol)
+          || url.username || url.password || url.search || url.hash || url.pathname !== '/') {
+        throw new Error('invalid origin');
+      }
+    } catch {
+      note.setAttribute('data-tone', 'err');
+      note.textContent = 'Enter the celld origin only, for example https://your-shop.exe.xyz.';
+      return;
+    }
+
+    const value = url.origin;
+    const replacement = el('meta', { itemprop: 'checkoutEndpoint', content: value });
+    button.disabled = true;
+    note.removeAttribute('data-tone');
+    note.textContent = 'Saving…';
+    const response = await fetch(SETTINGS_URL, {
+      method: 'PUT', credentials: 'same-origin', cache: 'no-store',
+      headers: { Range: 'selector=[itemprop="checkoutEndpoint"]', 'Content-Type': 'text/html' },
+      body: replacement.outerHTML,
+    }).catch(() => null);
+
+    if (response?.ok) {
+      stored.setAttribute('content', value);
+      input.value = value;
+      note.setAttribute('data-tone', 'ok');
+      note.textContent = 'Settings saved. New checkouts will use this celld service.';
+    } else {
+      note.setAttribute('data-tone', 'err');
+      note.textContent = response?.status === 401
+        ? 'The browser did not send your admin credential. Reload the page and sign in again.'
+        : 'Could not save the settings' + (response ? ' (' + response.status + ')' : '') + '.';
+    }
+    button.disabled = false;
+  });
+}
+
+
 // ---- wire up ----------------------------------------------------------------
 if (typeof document !== 'undefined') {
   productPage();
@@ -652,6 +721,7 @@ if (typeof document !== 'undefined') {
   adminOrders();
   adminOrder();
   adminProducts();
+  adminSettings();
   basketPage();
   checkoutPage();
   // Every page shows a basket count; pages that do not render the basket still need it.

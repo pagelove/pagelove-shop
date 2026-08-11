@@ -33,13 +33,14 @@ throw new HTTPResponse { status: 401, header: new Pair { key: "WWW-Authenticate"
       </script>
     </div>
   </div>
-  <!-- Catalogue and order mutations are permitted by rules.html only so the
-       authenticated admin UI can use selector PUTs. This trigger is the actual
-       gate. Checkout itself writes orders through authenticated WebDAV in the
-       celld checkout service, so anonymous browsers never need this route. -->
+  <!-- Catalogue, order and settings mutations are permitted by rules.html only
+       so the authenticated admin UI can use selector PUTs. This trigger is the
+       actual gate. Checkout itself writes orders through authenticated WebDAV
+       in the celld checkout service, so anonymous browsers never need this route. -->
   <div itemscope itemtype="https://pagelove.org/Trigger">
     <meta itemprop="resource" content="/data/products/*">
     <meta itemprop="resource" content="/data/orders/*">
+    <meta itemprop="resource" content="/data/settings/*">
     <meta itemprop="resource" content="/images/*">
     <meta itemprop="method" content="PUT">
     <meta itemprop="method" content="DELETE">

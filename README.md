@@ -24,6 +24,7 @@ Administrators can:
 - mark orders as paid, fulfilled or cancelled
 - create, edit and remove products
 - upload and reorder product images
+- set the celld checkout service used by the storefront
 
 ## Pagelove documents store the shop data
 
@@ -100,6 +101,10 @@ Checkout follows this sequence.
 The basket clears only after the customer returns from a successful checkout.
 A cancelled checkout leaves the basket unchanged.
 
+The celld origin is not hardcoded into the checkout page. An administrator sets
+it under **Admin → Settings**. Pagelove stores the value in a private settings
+document and stamps it into the checkout page when that page is composed.
+
 ## The webhook has a durable responsibility
 
 The webhook must keep working after the customer closes their browser. In
@@ -139,7 +144,7 @@ The real credential file is ignored by Git. The committed
 
 Rules deny public access to private configuration and raw order records. A
 separate trigger checks the same admin credential before product, image or
-order updates.
+order updates. It also protects changes made on the Settings page.
 
 ## Set up the admin password
 
@@ -298,6 +303,20 @@ Open the new workflow run to follow its progress. A successful run backs up the
 existing application files, deploys the new versions and verifies them by
 reading them back. Later pushes to `main` deploy automatically.
 
+#### Configure the checkout service
+
+1. Open `/admin/settings.html` on the deployed shop.
+
+2. Sign in with the admin password.
+
+3. Enter the public celld origin, such as `https://your-shop.exe.xyz`. Do not
+   add `/checkout`.
+
+4. Select **Save settings**.
+
+The first deployment creates a blank settings record. The storefront will not
+open Stripe Checkout until an administrator saves a celld origin.
+
 GitHub only makes
 [environment secrets and variables](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)
 available to jobs that use that environment. The workflow does not run for
@@ -309,11 +328,14 @@ and is not printed or stored in the repository.
 [`ops/pagelove-files.txt`](ops/pagelove-files.txt) lists the application files
 that GitHub Actions deploys. [`ops/pagelove-directories.txt`](ops/pagelove-directories.txt)
 lists empty writable collections that a new shop needs, including the order and
-image collections.
+image collections. [`ops/pagelove-seed-files.txt`](ops/pagelove-seed-files.txt)
+lists persistent records that are created only when missing. This seeds a blank
+shop settings record without resetting the celld origin on later deployments.
 
 The deployment script:
 
 - creates missing WebDAV collections
+- creates missing seed records and leaves existing ones unchanged
 - backs up files that already exist
 - uploads the complete replacement files
 - reads every file back and checks that it matches
@@ -353,6 +375,7 @@ The main directories and files are:
 - `basket.html` contains the transient basket element
 - `orders/:id.html` stamps an order into its confirmation route
 - `admin/` contains order and product management pages
+- `data/settings/shop.html` is the seed for admin-managed shop settings
 - `js/shop.mjs` provides the storefront and admin browser behaviour
 - `worker/` contains the celld checkout and webhook module
 - `ops/` contains exe.dev installation and deployment scripts

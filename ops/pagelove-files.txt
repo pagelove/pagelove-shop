@@ -2,6 +2,7 @@
 admin/index.html
 admin/orders/:id.html
 admin/products.html
+admin/settings.html
 basket.html
 checkout.html
 constraints.html

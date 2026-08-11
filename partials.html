@@ -18,7 +18,8 @@
            what actually checks it, so a wrong password reveals a link that then
            refuses. Nothing secret is read or emitted here. -->
       <span p:template="text/liquid">{% if request.headers.authorization %}<a href="/admin/index.html">Orders</a>
-      <a href="/admin/products.html">Products</a>{% endif %}</span>
+      <a href="/admin/products.html">Products</a>
+      <a href="/admin/settings.html">Settings</a>{% endif %}</span>
       <a class="basket-link" href="/basket.html">Basket <span class="basket-count" data-basket-count>0</span></a>
     </nav>
   </header>

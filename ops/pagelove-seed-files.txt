@@ -1,0 +1,2 @@
+# Persistent data created only when it is missing.
+data/settings/shop.html

@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:p="https://pagelove.org/1.0">
+<html lang="en" xmlns:e="https://pagelove.org/Binding/Sessel" xmlns:p="https://pagelove.org/1.0">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Checkout — Pagelove Shop</title>
   <link rel="stylesheet" href="/css/shop.css">
-  <!-- Public celld endpoint. Stripe and Pagelove API credentials are injected by
-       private exe.dev integrations and never enter this document. -->
-  <meta name="stripe-checkout-endpoint" content="https://pagelove-shop.exe.xyz">
   <script type="module" src="/js/shop.mjs"></script>
 </head>
-<body>
+<body e:settings="${[itemtype='https://shop.example/ShopSettings']}.first()">
+  <!-- The persisted setting is stamped into the page for the browser. Its source
+       document is not publicly readable and the stamped record remains hidden. -->
+  <p:stamp settings></p:stamp>
   <p:include selector="#chrome" resource="/partials.html"></p:include>
   <main class="wrap" data-checkout-page>
     <h1 style="letter-spacing:-.02em">Checkout</h1>
