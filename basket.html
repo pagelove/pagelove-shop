@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:p="https://pagelove.org/1.0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your basket — Pagelove Shop</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<!-- THE BASKET IS A TRANSIENT ELEMENT.
+
+     #basket carries p:transient, so every visitor — including anonymous ones —
+     sees their own copy and writes to their own session, never to this document.
+     The markup below is only the default a new session starts from.
+
+     Two consequences drive the whole app:
+       1. Writes are read-modify-write PUTs scoped to #basket. POST-append into a
+          transient element is not documented (the identity rule, the error table
+          and the summary all name PUT only), so shop.mjs never relies on it.
+       2. Transient content is invisible to Resource Binding — the server cannot
+          see a basket. Checkout therefore reads the basket in the browser and
+          sends it explicitly as the order body. -->
+<body>
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap basket" data-basket-page>
+    <h1>Your basket</h1>
+    <ul id="basket" p:transient></ul>
+    <div data-basket-view></div>
+  </main>
+  <footer class="site-foot">Pagelove Shop · a Pagelove application</footer>
+</body>
+</html>

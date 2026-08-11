@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:e="https://pagelove.org/Binding/Sessel" xmlns:p="https://pagelove.org/1.0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order — Pagelove Shop admin</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<body e:order="${[itemtype='https://shop.example/Order']:has([itemprop='orderId']:value-equals(request.params.id))}.first()">
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap" data-admin-order>
+    <p:stamp order></p:stamp>
+  </main>
+  <footer class="site-foot">Pagelove Shop · admin</footer>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>admin gate</title></head>
+<body>
+  <!-- ADMIN GATE.
+
+       This host has no identity provider, so every actor is "*" and an
+       AuthorizationRule cannot tell the shopkeeper from a stranger. Orders carry
+       names, addresses and emails, so the admin pages must not be public.
+
+       A trigger closes that gap: /admin/* requires the browser's Basic credential
+       to match the one stored in /private/admin.html (unreadable to the public).
+       Answering 401 with a WWW-Authenticate header is what makes the browser show
+       its own password prompt, so no login page is needed.
+
+       The header lookup is LOWERCASE. HTTP/2 sends header names lowercased, so
+       headers["Authorization"] is always empty and the gate would let everyone
+       through while looking correct. -->
+  <div itemscope itemtype="https://pagelove.org/Trigger">
+    <meta itemprop="resource" content="/admin/*">
+    <meta itemprop="method" content="GET">
+    <div itemprop="when" itemscope itemtype="https://pagelove.org/Sessel">
+      <script itemprop="source" type="text/sessel">
+@schema Context url("https://pagelove.org/Context");
+(Context.request.headers["authorization"] ?? "") == ${[itemtype="https://shop.example/AdminCredential"] [itemprop="authorization"]}.first().value()
+      </script>
+    </div>
+    <div itemprop="otherwise" itemscope itemtype="https://pagelove.org/Sessel">
+      <script itemprop="source" type="text/sessel">
+@schema HTTPResponse url("https://pagelove.org/HTTPResponse");
+@schema Pair url("https://pagelove.org/Pair");
+throw new HTTPResponse { status: 401, header: new Pair { key: "WWW-Authenticate", value: "Basic realm=\"Pagelove Shop admin\"" }, body: "Authorization required" }
+      </script>
+    </div>
+  </div>
+  <!-- Catalogue and order mutations are permitted by rules.html only so the
+       authenticated admin UI can use selector PUTs. This trigger is the actual
+       gate. Checkout itself writes orders through authenticated WebDAV in the
+       celld checkout service, so anonymous browsers never need this route. -->
+  <div itemscope itemtype="https://pagelove.org/Trigger">
+    <meta itemprop="resource" content="/data/products/*">
+    <meta itemprop="resource" content="/data/orders/*">
+    <meta itemprop="resource" content="/images/*">
+    <meta itemprop="method" content="PUT">
+    <meta itemprop="method" content="DELETE">
+    <div itemprop="when" itemscope itemtype="https://pagelove.org/Sessel">
+      <script itemprop="source" type="text/sessel">
+@schema Context url("https://pagelove.org/Context");
+(Context.request.headers["authorization"] ?? "") == ${[itemtype="https://shop.example/AdminCredential"] [itemprop="authorization"]}.first().value()
+      </script>
+    </div>
+    <div itemprop="otherwise" itemscope itemtype="https://pagelove.org/Sessel">
+      <script itemprop="source" type="text/sessel">
+@schema HTTPResponse url("https://pagelove.org/HTTPResponse");
+throw new HTTPResponse { status: 401, body: "Admin credential required to change shop data" }
+      </script>
+    </div>
+  </div>
+</body>
+</html>

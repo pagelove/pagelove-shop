@@ -1,0 +1,9 @@
+.DS_Store
+/.cleanup-backups/
+/.deployment-backups/
+/data/orders/
+/private/admin.html
+node_modules/
+worker/.dev.vars
+worker/.wrangler/
+worker/dist/

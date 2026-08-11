@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:p="https://pagelove.org/1.0" xmlns:r="https://pagelove.org/Binding/CSS">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagelove Shop</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<body>
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap">
+    <div class="hero">
+      <h1>Pagelove merchandise</h1>
+      <p>Caps, tees, mugs and stickers for people who think a web page should be able to hold its own data. Everything ships worldwide.</p>
+    </div>
+    <!-- A product with no images yields an EMPTY STRING for `shot`, not nil, and an
+         empty string is TRUTHY in Liquid — so the test below must be `!= blank` or
+         every emoji placeholder becomes a broken <img src="">. -->
+    <div class="grid" r:products="[itemtype='https://shop.example/Product']" p:template="text/liquid">
+      {% assign items = products | where: "available", "yes" | sort: "name" %}
+      {% for p in items %}
+      <a class="card" href="/products/{{ p.slug }}.html">
+        {% assign shot = p.image | join: "," | split: "," | first %}
+        {% if shot != blank %}<span class="thumb has-img"><img src="{{ shot }}" alt="{{ p.name }}" loading="lazy"></span>
+        {% else %}<span class="thumb">{{ p.emoji }}</span>{% endif %}
+        <span class="cat">{{ p.category }}</span>
+        <h2>{{ p.name }}</h2>
+        <span class="price">{{ p.priceDisplay }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </main>
+  <footer class="site-foot">Pagelove Shop · a Pagelove application</footer>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "pagelove-shop-checkout",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-01",
+  "vars": {
+    "SHOP_ORIGIN": "https://barn-hair-4926.onpagelove.com",
+    "SHOP_WEBDAV_URL": "https://pagelove-webdav.int.exe.xyz/",
+    "STRIPE_API_BASE": "https://stripe-api.int.exe.xyz/",
+    "STRIPE_MODE": "test"
+  }
+}

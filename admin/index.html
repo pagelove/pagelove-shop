@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:p="https://pagelove.org/1.0" xmlns:r="https://pagelove.org/Binding/CSS">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders — Pagelove Shop admin</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<!-- Orders are denied to public GET, but a binding runs with elevated rights, so
+     this page can list them. The gate in /admin-auth.html is what keeps the page
+     itself private. -->
+<body>
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap" data-admin-orders>
+    <div class="admin-head"><h1>Orders</h1></div>
+    <ul class="admin-list" r:orders="[itemtype='https://shop.example/Order']" p:template="text/liquid">
+      {% assign all = orders | sort: "placedAt" | reverse %}
+      {% for o in all %}
+      <li class="admin-row" data-order="{{ o.orderId }}" data-status="{{ o.paymentStatus }}" data-placed="{{ o.placedAt }}" data-total="{{ o.amountTotal }}" data-email="{{ o.email }}" data-name="{{ o.customerName }}"></li>
+      {% endfor %}
+    </ul>
+  </main>
+  <footer class="site-foot">Pagelove Shop · admin</footer>
+</body>
+</html>

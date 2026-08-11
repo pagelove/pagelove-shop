@@ -1,0 +1,15 @@
+{
+  "name": "pagelove-shop-checkout",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "build": "esbuild src/index.js --bundle --format=esm --outfile=dist/index.js",
+    "check": "npm test && npm run build",
+    "deploy": "celld deploy"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

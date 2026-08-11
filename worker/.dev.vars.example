@@ -1,0 +1,7 @@
+# Local development can call the upstream services directly. Production uses
+# exe.dev HTTP integrations, so these two API keys are not present in celld.
+STRIPE_SECRET_KEY=sk_test_REPLACE_ME
+STRIPE_WEBHOOK_SECRET=whsec_REPLACE_ME
+PAGELOVE_API_KEY=pk_REPLACE_ME
+STRIPE_API_BASE=https://api.stripe.com/
+SHOP_WEBDAV_URL=https://dav-barn-hair-4926.onpagelove.com/

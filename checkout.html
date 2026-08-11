@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:p="https://pagelove.org/1.0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout — Pagelove Shop</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <!-- Public celld endpoint. Stripe and Pagelove API credentials are injected by
+       private exe.dev integrations and never enter this document. -->
+  <meta name="stripe-checkout-endpoint" content="https://pagelove-shop.exe.xyz">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<body>
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap" data-checkout-page>
+    <h1 style="letter-spacing:-.02em">Checkout</h1>
+    <div class="checkout">
+      <form class="panel" data-checkout-form>
+        <h2>Delivery details</h2>
+        <label for="co-email">Email</label>
+        <input id="co-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+        <label for="co-name">Full name</label>
+        <input id="co-name" name="name" type="text" required autocomplete="name">
+        <label for="co-line1">Address</label>
+        <input id="co-line1" name="line1" type="text" required autocomplete="address-line1" placeholder="Street address">
+        <div class="row2">
+          <div><label for="co-city">City</label><input id="co-city" name="city" type="text" required autocomplete="address-level2"></div>
+          <div><label for="co-post">Postcode</label><input id="co-post" name="postcode" type="text" required autocomplete="postal-code"></div>
+        </div>
+        <label for="co-country">Country</label>
+        <input id="co-country" name="country" type="text" required autocomplete="country-name" value="United Kingdom">
+        <p class="note">Payment is taken securely by Stripe on the next step. The amount shown by Stripe is calculated again from the live product catalogue.</p>
+        <button class="btn btn-wide" type="submit" style="margin-top:1rem">Continue to secure payment</button>
+        <p class="note" data-checkout-note role="status" aria-live="polite"></p>
+      </form>
+      <aside class="panel" data-checkout-summary>
+        <h2>Order summary</h2>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-foot">Pagelove Shop · a Pagelove application</footer>
+</body>
+</html>

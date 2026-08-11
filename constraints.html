@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>shape constraints</title></head>
+<body>
+  <!-- Orders are written by the shopper's browser, so the shape of what may be
+       stored is pinned here rather than trusted. This shape is CLOSED (it has
+       permits): anything not named — a <script>, an <img>, an onclick, a stray
+       class — is refused with 422 and the order is never created. -->
+  <div itemscope itemtype="https://pagelove.org/ShapeConstraint">
+    <meta itemprop="resource" content="/data/orders/*">
+    <meta itemprop="selector" content="[itemtype='https://shop.example/Order']">
+    <!-- The root element is exempt from the ELEMENT check but its own attributes
+         are still checked, so the root must be named here or every real order is
+         refused 422 — which is exactly what happened the first time. -->
+    <code itemprop="permit">div[itemscope][itemtype="https://shop.example/Order"][id]</code>
+    <code itemprop="permit">meta[itemprop][content]</code>
+    <code itemprop="permit">ul[itemprop="lines"]</code>
+    <code itemprop="permit">li[itemscope][itemtype="https://shop.example/OrderLine"]</code>
+  </div>
+</body>
+</html>

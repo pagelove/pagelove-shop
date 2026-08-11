@@ -1,0 +1,99 @@
+:root{--ink:#0b1020;--soft:#4b5563;--faint:#9aa3b2;--line:#e5e7eb;--bg:#fbfbfd;--accent:#3b5bdb;--ok:#166534;--okbg:#dcfce7;
+ --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--measure:64ch}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--bg);line-height:1.6}
+a{color:var(--ink)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 1.2rem}
+.site-nav{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:20}
+.site-nav .brand{font-weight:700;letter-spacing:-.02em;text-decoration:none;font-size:1.05rem}
+.site-nav nav{margin-left:auto;display:flex;gap:1rem;align-items:center}
+.site-nav a{text-decoration:none;color:var(--soft);font-size:.92rem}
+.site-nav a:hover{color:var(--ink)}
+.basket-link{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);border-radius:999px;padding:.35rem .8rem}
+.basket-count{background:var(--ink);color:#fff;border-radius:999px;font-size:.72rem;padding:.05em .5em;min-width:1.5em;text-align:center}
+.hero{padding:3rem 0 1.5rem}
+.hero h1{font-size:2.4rem;line-height:1.1;letter-spacing:-.03em;margin:0 0 .5rem}
+.hero p{color:var(--soft);max-width:var(--measure);margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1.2rem;padding:1.5rem 0 4rem}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:1.1rem;display:flex;flex-direction:column;gap:.5rem;text-decoration:none}
+.card:hover{border-color:var(--ink)}
+.card .thumb{font-size:3rem;line-height:1;text-align:center;padding:1.2rem 0;background:var(--bg);border-radius:12px}
+.card h2{font-size:1rem;margin:0}
+.card .price{font-weight:600}
+.card .cat{font-size:.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
+.product{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;padding:2.5rem 0 4rem;align-items:start}
+.product .shot{font-size:8rem;text-align:center;background:#fff;border:1px solid var(--line);border-radius:20px;padding:2rem}
+.product h1{font-size:2rem;letter-spacing:-.02em;margin:0 0 .3rem}
+.product .price{font-size:1.4rem;font-weight:600;margin:.4rem 0 1rem}
+.product .desc{color:var(--soft);max-width:var(--measure)}
+label{display:block;font-size:.8rem;color:var(--soft);margin:1rem 0 .3rem;font-weight:600}
+select,input[type=text],input[type=email],input[type=number],textarea{width:100%;font:inherit;padding:.6rem .7rem;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(11,16,32,.07)}
+.btn{font:inherit;font-weight:600;color:#fff;background:var(--ink);border:1px solid var(--ink);border-radius:12px;padding:.7rem 1.3rem;cursor:pointer}
+.btn:hover{background:#1e293b}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-wide{width:100%;text-align:center}
+.note{font-size:.85rem;color:var(--faint);margin:.6rem 0 0}
+.note[data-tone=err]{color:#b91c1c}
+.note[data-tone=ok]{color:var(--ok)}
+.basket{padding:2rem 0 4rem;max-width:760px}
+.basket h1{font-size:1.8rem;letter-spacing:-.02em}
+.line{display:grid;grid-template-columns:2.6rem 1fr auto auto;gap:.9rem;align-items:center;padding:.9rem 0;border-bottom:1px solid var(--line)}
+.line .em{font-size:1.6rem}
+.line .nm{font-weight:600}
+.line .vr{font-size:.8rem;color:var(--faint)}
+.line .qty{display:flex;align-items:center;gap:.4rem}
+.line .qty button{width:1.9rem;height:1.9rem;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font:inherit}
+.line .qty button:hover{border-color:var(--ink)}
+.line .amt{font-weight:600;min-width:5rem;text-align:right}
+.totals{display:flex;flex-direction:column;gap:.4rem;padding:1.2rem 0;font-size:.95rem}
+.totals div{display:flex;justify-content:space-between}
+.totals .grand{font-size:1.2rem;font-weight:700;border-top:1px solid var(--line);padding-top:.7rem;margin-top:.3rem}
+.empty{padding:3rem 0;color:var(--faint);text-align:center}
+.checkout{display:grid;grid-template-columns:1.3fr 1fr;gap:2.5rem;padding:2rem 0 4rem;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:1.3rem}
+.panel h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin:0 0 .9rem}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.confirm{padding:3rem 0;max-width:640px}
+.badge{display:inline-block;background:var(--okbg);color:var(--ok);border-radius:999px;padding:.2em .7em;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.kv{display:grid;grid-template-columns:9rem 1fr;gap:.4rem 1rem;font-size:.92rem;margin:1.2rem 0}
+.kv dt{color:var(--faint)}
+.kv dd{margin:0}
+.site-foot{border-top:1px solid var(--line);padding:2rem 1.2rem;color:var(--faint);font-size:.85rem;text-align:center}
+@media(max-width:760px){.product,.checkout{grid-template-columns:1fr}}
+/* Admin rows carry five cells (emoji, name, badge, amount, actions) — the basket's
+   four-column .line grid would wrap them. */
+.line-admin{grid-template-columns:2.6rem 1fr auto auto auto}
+/* Text buttons, not the basket's 1.9rem square +/− controls. */
+.line .actions{display:flex;gap:.45rem}
+.line .actions button{font:inherit;font-size:.82rem;line-height:1.4;padding:.3rem .75rem;width:auto;height:auto;
+  border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--soft);white-space:nowrap}
+.line .actions button:hover{border-color:var(--ink);color:var(--ink)}
+.line .actions button.danger:hover{border-color:#b91c1c;color:#b91c1c}
+/* #basket is the transient STORAGE element, not the basket the shopper sees — that
+   is rendered into [data-basket-view]. It must be hidden with CSS rather than a
+   hidden attribute: every write replaces the element with the request body, and only
+   the transient marker survives that, so an attribute would be dropped on first use.
+   The id always survives, because the platform requires the replacement to keep
+   matching #basket. */
+#basket{display:none}
+/* product images */
+.thumb.has-img{padding:0;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:8.5rem}
+.thumb.has-img img{width:100%;height:100%;max-height:11rem;object-fit:cover;display:block}
+.shot-gallery{display:flex;flex-direction:column;gap:.7rem;padding:.7rem}
+.shot-main{width:100%;border-radius:14px;object-fit:cover;max-height:26rem;background:var(--bg)}
+.rail{display:flex;gap:.5rem;flex-wrap:wrap}
+.rail-b{padding:0;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;width:4.2rem;height:4.2rem;overflow:hidden}
+.rail-b.on{border-color:var(--ink);box-shadow:0 0 0 2px rgba(11,16,32,.12)}
+.rail-b img{width:100%;height:100%;object-fit:cover;display:block}
+.dropzone{border:2px dashed var(--line);border-radius:14px;padding:1.1rem;text-align:center;color:var(--soft);cursor:pointer;font-size:.9rem;background:var(--bg)}
+.dropzone:hover,.dropzone:focus,.dropzone.over{border-color:var(--ink);color:var(--ink);outline:none}
+.thumbs{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.7rem}
+.thumb-item{margin:0;position:relative;width:5.2rem;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;cursor:grab}
+.thumb-item.dragging{opacity:.4}
+.thumb-item.over{border-color:var(--ink);box-shadow:0 0 0 2px rgba(11,16,32,.12)}
+.thumb-item img{width:100%;height:5.2rem;object-fit:cover;display:block}
+.thumb-item figcaption{font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);text-align:center;padding:.15rem}
+.thumb-x{position:absolute;top:.2rem;right:.2rem;width:1.4rem;height:1.4rem;border-radius:999px;border:none;background:rgba(11,16,32,.72);color:#fff;cursor:pointer;line-height:1;font-size:.9rem}
+.thumb-x:hover{background:#b91c1c}

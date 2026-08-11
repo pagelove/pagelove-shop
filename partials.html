@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:p="https://pagelove.org/1.0">
+<head><meta charset="UTF-8"><title>chrome</title></head>
+<body>
+  <header id="chrome" class="site-nav" role="banner">
+    <a class="brand" href="/index.html">Pagelove Shop</a>
+    <nav>
+      <a href="/index.html">Shop</a>
+      <!-- Admin links are decided HERE, during composition, not in the browser.
+           A shopper is never sent the markup at all.
+
+           This must not be done by asking the browser to probe /admin/: that path
+           answers 401 with WWW-Authenticate, and the browser raises its own password
+           box even for a background request — so every shopper on every page was
+           asked to log in. Never touch an authenticated path speculatively.
+
+           Presence of the credential is enough for a link: the gate on /admin/* is
+           what actually checks it, so a wrong password reveals a link that then
+           refuses. Nothing secret is read or emitted here. -->
+      <span p:template="text/liquid">{% if request.headers.authorization %}<a href="/admin/index.html">Orders</a>
+      <a href="/admin/products.html">Products</a>{% endif %}</span>
+      <a class="basket-link" href="/basket.html">Basket <span class="basket-count" data-basket-count>0</span></a>
+    </nav>
+  </header>
+</body>
+</html>

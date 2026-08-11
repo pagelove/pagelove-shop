@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:p="https://pagelove.org/1.0" xmlns:r="https://pagelove.org/Binding/CSS">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Products — Pagelove Shop admin</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<body>
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap" data-admin-products>
+    <div class="admin-head">
+      <h1>Products</h1>
+      <div class="admin-actions"><button class="btn" type="button" data-new-product>+ New product</button></div>
+    </div>
+    <ul class="admin-list" r:products="[itemtype='https://shop.example/Product']" p:template="text/liquid">
+      {% assign all = products | sort: "name" %}
+      {% for p in all %}
+      <li class="admin-row" data-slug="{{ p.slug }}" data-name="{{ p.name }}" data-sku="{{ p.sku }}" data-price="{{ p.price }}" data-category="{{ p.category }}" data-emoji="{{ p.emoji }}" data-available="{{ p.available }}" data-description="{{ p.description }}" data-variants="{{ p.variant | join: ',' }}" data-images="{{ p.image | join: ',' }}"></li>
+      {% endfor %}
+    </ul>
+  </main>
+  <footer class="site-foot">Pagelove Shop · admin</footer>
+</body>
+</html>

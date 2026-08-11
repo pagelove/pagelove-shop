@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:e="https://pagelove.org/Binding/Sessel" xmlns:p="https://pagelove.org/1.0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order — Pagelove Shop</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<!-- Order confirmation: /orders/:id.html. The order records live under /data/orders/,
+     which is DENIED to the public — but composition runs with elevated rights, so this
+     page can stamp an order the visitor could never fetch directly. The id is a random
+     token, so knowing your own order URL does not reveal anyone else's. -->
+<body e:order="${[itemtype='https://shop.example/Order']:has([itemprop='orderId']:value-equals(request.params.id))}.first()">
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap confirm" data-order-page>
+    <p:stamp order></p:stamp>
+  </main>
+  <footer class="site-foot">Pagelove Shop · a Pagelove application</footer>
+</body>
+</html>

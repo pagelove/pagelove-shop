@@ -1,0 +1,27 @@
+[Unit]
+Description=celld runtime for Pagelove Stripe checkout
+After=network-online.target pagelove-minio.service
+Requires=pagelove-minio.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=exedev
+Group=exedev
+EnvironmentFile=/etc/pagelove-shop/celld.env
+EnvironmentFile=-/etc/pagelove-shop/worker.env
+Environment=CELLD_ADDR=0.0.0.0:8000
+Environment=CELLD_ADVERTISE=127.0.0.1:8000
+Environment=CELLD_WATCH=/var/lib/pagelove-celld
+Environment=CELLD_ESBUILD=/usr/local/bin/esbuild
+ExecStart=/usr/local/bin/celld
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/pagelove-celld
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>authorization rules</title></head>
+<body>
+  <!-- Shop authorization. Deny-by-default is the platform's posture, so every
+       rule here is a deliberate opening. This host has no OIDC, so every actor
+       is "*" — including anonymous shoppers. -->
+
+  <!-- The shop itself is public reading. -->
+  <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+    <meta itemprop="actor" content="*"><meta itemprop="resource" content="/*">
+    <meta itemprop="method" content="GET"><meta itemprop="action" content="allow">
+  </div>
+
+  <!-- THE BASKET. A shopper may write only the #basket element on /basket.html.
+       Because that element is transient, the write lands in the shopper's own
+       session and can never alter the document other shoppers start from —
+       which is what makes a public write rule safe here. DELETE empties it. -->
+  <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+    <meta itemprop="actor" content="*"><meta itemprop="resource" content="/basket.html">
+    <meta itemprop="selector" content="#basket">
+    <meta itemprop="method" content="PUT"><meta itemprop="method" content="DELETE">
+    <meta itemprop="action" content="allow">
+  </div>
+
+  <!-- ORDERS. Nobody may read /data/orders/ over HTTP — confirmation pages reach
+       records through elevated composition. PUT remains allowed so the Basic-auth
+       admin UI can update a status, but the trigger in /admin-auth.html refuses
+       every unauthenticated PUT. The celld checkout service creates and updates orders via
+       authenticated WebDAV, which does not require a public browser write path. -->
+  <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+    <meta itemprop="actor" content="*"><meta itemprop="resource" content="/data/orders/*">
+    <meta itemprop="method" content="PUT"><meta itemprop="action" content="allow">
+  </div>
+  <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+    <meta itemprop="actor" content="*"><meta itemprop="resource" content="/data/orders/*">
+    <meta itemprop="method" content="GET"><meta itemprop="action" content="deny">
+  </div>
+
+  <!-- PRIVATE CONFIG. The admin Basic credential lives in /private/ and is
+       protected by this rule. Stripe and Pagelove API keys live only in encrypted
+       private exe.dev integrations. Deny wins over the broad public GET allow. -->
+  <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+    <meta itemprop="actor" content="*"><meta itemprop="resource" content="/private/*">
+    <meta itemprop="method" content="*"><meta itemprop="action" content="deny">
+  </div>
+
+  <!-- CATALOGUE WRITES. Opened to "*" only because this host has no identity
+       provider; the admin trigger in /admin-auth.html is what actually gates it.
+       When OIDC is enabled, replace the actor here with a staff group and delete
+       that trigger. -->
+  <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+    <meta itemprop="actor" content="*"><meta itemprop="resource" content="/data/products/*">
+    <meta itemprop="resource" content="/images/*">
+    <meta itemprop="method" content="PUT"><meta itemprop="method" content="DELETE">
+    <meta itemprop="action" content="allow">
+  </div>
+</body>
+</html>

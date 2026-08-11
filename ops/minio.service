@@ -1,0 +1,16 @@
+[Unit]
+Description=Private S3 storage for celld
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=3
+ExecStartPre=-/usr/bin/docker rm -f pagelove-celld-minio
+ExecStart=/usr/bin/docker run --name pagelove-celld-minio --env-file=/etc/pagelove-shop/minio.env --publish=127.0.0.1:9000:9000 --volume=/var/lib/pagelove-minio:/data minio/minio:latest server /data --console-address :9001
+ExecStop=/usr/bin/docker stop pagelove-celld-minio
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:e="https://pagelove.org/Binding/Sessel" xmlns:p="https://pagelove.org/1.0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagelove Shop</title>
+  <link rel="stylesheet" href="/css/shop.css">
+  <script type="module" src="/js/shop.mjs"></script>
+</head>
+<!-- One page for every product: /products/:slug.html. The product record is stamped
+     in, and shop.mjs reads its microdata to build the buy panel (variants, quantity,
+     add-to-basket) — so the page needs no per-product markup of its own. -->
+<body e:product="${[itemtype='https://shop.example/Product']:has([itemprop='slug']:value-equals(request.params.slug))}.first()">
+  <p:include selector="#chrome" resource="/partials.html"></p:include>
+  <main class="wrap" data-product-page>
+    <p:stamp product></p:stamp>
+  </main>
+  <footer class="site-foot">Pagelove Shop · a Pagelove application</footer>
+</body>
+</html>
