@@ -82,6 +82,17 @@ ensure_collection() {
       -X MKCOL "${WEBDAV_URL}${current_collection}")
     case "$status" in
       2??|405) ;;
+      409)
+        if grep -Fq \
+          'https://dombase.pagelove.team/ns/error/DirectoryAlreadyExists' \
+          "$response_file"; then
+          printf 'MKCOL %s -> already exists\n' "$current_collection"
+        else
+          printf 'MKCOL %s failed with HTTP %s\n' "$current_collection" "$status" >&2
+          sed -n '1,20p' "$response_file" >&2
+          exit 1
+        fi
+        ;;
       *)
         printf 'MKCOL %s failed with HTTP %s\n' "$current_collection" "$status" >&2
         sed -n '1,20p' "$response_file" >&2
