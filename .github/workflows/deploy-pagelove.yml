@@ -48,31 +48,22 @@ jobs:
               ;;
           esac
 
-      - name: Prepare the optional admin credential
-        shell: sh
-        env:
-          PAGELOVE_ADMIN_AUTHORIZATION: ${{ secrets.PAGELOVE_ADMIN_AUTHORIZATION }}
-        run: |
-          if [ -z "$PAGELOVE_ADMIN_AUTHORIZATION" ]; then
-            exit 0
-          fi
-          case "$PAGELOVE_ADMIN_AUTHORIZATION" in
-            'Basic '*) ;;
-            *)
-              echo 'PAGELOVE_ADMIN_AUTHORIZATION must contain the complete Basic authorization value.' >&2
-              exit 1
-              ;;
-          esac
-          escaped_credential=$(printf '%s' "$PAGELOVE_ADMIN_AUTHORIZATION" | sed 's/[\/&]/\\&/g')
-          sed "s/Basic REPLACE_WITH_BASE64_OWNER_COLON_PASSWORD/$escaped_credential/" \
-            private/admin.example.html > private/admin.html
-          cp ops/pagelove-files.txt "$RUNNER_TEMP/pagelove-files.txt"
-          printf '%s\n' 'private/admin.html' >> "$RUNNER_TEMP/pagelove-files.txt"
-          printf 'PAGELOVE_DEPLOY_MANIFEST=%s\n' "$RUNNER_TEMP/pagelove-files.txt" >> "$GITHUB_ENV"
-
       - name: Deploy and verify the shop
         shell: sh
         env:
           PAGELOVE_WEBDAV_URL: ${{ vars.PAGELOVE_WEBDAV_URL }}
           PAGELOVE_API_KEY: ${{ secrets.PAGELOVE_API_KEY }}
         run: ./ops/deploy-pagelove.sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP/pagelove-backup"
+
+      - name: Deploy the optional admin password
+        shell: sh
+        env:
+          PAGELOVE_WEBDAV_URL: ${{ vars.PAGELOVE_WEBDAV_URL }}
+          PAGELOVE_API_KEY: ${{ secrets.PAGELOVE_API_KEY }}
+          PAGELOVE_ADMIN_PASSWORD: ${{ secrets.PAGELOVE_ADMIN_PASSWORD }}
+        run: |
+          if [ -z "$PAGELOVE_ADMIN_PASSWORD" ]; then
+            echo 'PAGELOVE_ADMIN_PASSWORD is not set; leaving the live admin credential unchanged.'
+            exit 0
+          fi
+          ./ops/deploy-admin-password.sh "$RUNNER_TEMP/pagelove-admin-backup"

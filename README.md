@@ -141,34 +141,43 @@ Rules deny public access to private configuration and raw order records. A
 separate trigger checks the same admin credential before product, image or
 order updates.
 
-## Set up the admin credential
+## Set up the admin password
 
-1. Generate a strong password and its complete Basic authorization value.
+1. Generate a strong password.
 
    ```sh
-   ADMIN_PASSWORD=$(openssl rand -hex 24)
-   ADMIN_BASIC=$(printf 'owner:%s' "$ADMIN_PASSWORD" | base64 | tr -d '\n')
-   printf 'Username: owner\nPassword: %s\nAuthorization: Basic %s\n' \
-     "$ADMIN_PASSWORD" "$ADMIN_BASIC"
-   unset ADMIN_PASSWORD ADMIN_BASIC
+   openssl rand -hex 24
    ```
 
 2. Save the generated password in a password manager.
 
-3. Add the complete `Basic ...` value to the `production` GitHub Environment as
-   a secret named `PAGELOVE_ADMIN_AUTHORIZATION`.
+3. Add the plain-text password to the `production` GitHub Environment as a
+   secret named `PAGELOVE_ADMIN_PASSWORD`.
 
-GitHub Actions creates `private/admin.html` temporarily during deployment. The
-value is not written to the repository. If the secret is not set, an existing
-admin credential on Pagelove is left unchanged.
+The deployment workflow passes the password to
+[`ops/deploy-admin-password.sh`](ops/deploy-admin-password.sh). The script:
 
-For a terminal deployment, copy `private/admin.example.html` to
-`private/admin.html`, replace the placeholder with the complete value, and add
-`private/admin.html` to `PAGELOVE_DEPLOY_FILES`. The real file remains ignored
-by Git.
+- combines the fixed username `owner` with the password
+- encodes the complete HTTP Basic credential
+- creates `private/admin.html` in a private temporary directory
+- deploys and verifies that page through WebDAV
+- removes the temporary credential page
 
-Base64 is encoding, not encryption. Never commit or share the generated header
-value.
+The plain-text password and generated authorization value are not written to
+the repository or printed in the workflow log. If the secret is not set, an
+existing admin credential on Pagelove is left unchanged.
+
+For a terminal deployment, set `PAGELOVE_WEBDAV_URL` and `PAGELOVE_API_KEY` as
+described below. Then enter the password without putting it in shell history:
+
+```sh
+printf 'Admin password: '
+read -r -s PAGELOVE_ADMIN_PASSWORD
+printf '\n'
+export PAGELOVE_ADMIN_PASSWORD
+./ops/deploy-admin-password.sh
+unset PAGELOVE_ADMIN_PASSWORD
+```
 
 ## Test the checkout service locally
 
@@ -196,8 +205,7 @@ Have these values ready:
 
 - the WebDAV URL for your Pagelove host
 - a Pagelove API key beginning with `pk_`
-- the complete admin `Basic ...` authorization value, if you want to use the
-  admin area
+- the plain-text admin password, if you want to use the admin area
 
 #### Create the environment
 
@@ -253,19 +261,22 @@ secret.
 Do not add the API key as an environment variable. Variables are not masked in
 workflow output.
 
-#### Add the admin credential
+#### Add the admin password
 
 This secret is optional. Without it, a new deployment has no usable admin
 login. An existing admin credential on Pagelove is left unchanged.
 
 1. Under **Environment secrets**, select **Add secret** again.
 
-2. Enter `PAGELOVE_ADMIN_AUTHORIZATION` in the **Name** field.
+2. Enter `PAGELOVE_ADMIN_PASSWORD` in the **Name** field.
 
-3. Paste the complete generated value, including the `Basic ` prefix, into the
-   **Value** field.
+3. Paste the plain-text admin password into the **Value** field. Do not add the
+   username, a `Basic ` prefix or Base64 encoding.
 
 4. Select **Add secret**.
+
+During deployment, `ops/deploy-admin-password.sh` creates and deploys the
+authorization setting page from this password.
 
 #### Run the first deployment
 

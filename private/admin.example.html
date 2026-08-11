@@ -2,8 +2,9 @@
 <html lang="en">
 <head><meta charset="UTF-8"><title>admin credential</title></head>
 <body>
-  <!-- Copy this file to admin.html and replace the authorization placeholder.
-       admin.html contains a reusable credential and must never be committed. -->
+  <!-- ops/deploy-admin-password.sh uses this file to create admin.html from the
+       plain-text password supplied at deployment time. The generated file
+       contains a reusable credential and must never be committed. -->
   <div itemscope itemtype="https://shop.example/AdminCredential">
     <meta itemprop="authorization" content="Basic REPLACE_WITH_BASE64_OWNER_COLON_PASSWORD">
     <meta itemprop="username" content="owner">
