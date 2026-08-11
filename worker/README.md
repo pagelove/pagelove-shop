@@ -26,7 +26,7 @@ The VM setup in `../ops/install-celld.sh` installs celld, esbuild, a private
 loopback-only S3-compatible store, and systemd units. From the copied project:
 
 ```sh
-./ops/install-celld.sh /home/exedev/pagelove-shop
+./ops/install-celld.sh .
 set -a
 . /etc/pagelove-shop/celld.env
 set +a

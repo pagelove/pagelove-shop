@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-PROJECT_DIR=${1:-/home/exedev/pagelove-shop}
+PROJECT_DIR=${1:-.}
 CONFIG_DIR=/etc/pagelove-shop
 CELLD_DATA_DIR=/var/lib/pagelove-celld
 MINIO_DATA_DIR=/var/lib/pagelove-minio

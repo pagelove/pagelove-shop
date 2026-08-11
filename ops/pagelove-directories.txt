@@ -1,0 +1,3 @@
+# Empty writable collections required by a new shop.
+data/orders
+images

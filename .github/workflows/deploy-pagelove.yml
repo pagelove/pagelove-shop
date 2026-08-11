@@ -1,0 +1,78 @@
+name: Deploy to Pagelove
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pagelove-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy shop
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Check deployment configuration
+        shell: sh
+        env:
+          PAGELOVE_WEBDAV_URL: ${{ vars.PAGELOVE_WEBDAV_URL }}
+          PAGELOVE_API_KEY: ${{ secrets.PAGELOVE_API_KEY }}
+        run: |
+          if [ -z "$PAGELOVE_WEBDAV_URL" ]; then
+            echo 'Set the PAGELOVE_WEBDAV_URL variable in the production environment.' >&2
+            exit 1
+          fi
+          case "$PAGELOVE_WEBDAV_URL" in
+            https://*|http://*) ;;
+            *)
+              echo 'PAGELOVE_WEBDAV_URL must be an HTTP or HTTPS URL.' >&2
+              exit 1
+              ;;
+          esac
+          case "$PAGELOVE_API_KEY" in
+            pk_*) ;;
+            *)
+              echo 'Set PAGELOVE_API_KEY to a Pagelove API key in the production environment secrets.' >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Prepare the optional admin credential
+        shell: sh
+        env:
+          PAGELOVE_ADMIN_AUTHORIZATION: ${{ secrets.PAGELOVE_ADMIN_AUTHORIZATION }}
+        run: |
+          if [ -z "$PAGELOVE_ADMIN_AUTHORIZATION" ]; then
+            exit 0
+          fi
+          case "$PAGELOVE_ADMIN_AUTHORIZATION" in
+            'Basic '*) ;;
+            *)
+              echo 'PAGELOVE_ADMIN_AUTHORIZATION must contain the complete Basic authorization value.' >&2
+              exit 1
+              ;;
+          esac
+          escaped_credential=$(printf '%s' "$PAGELOVE_ADMIN_AUTHORIZATION" | sed 's/[\/&]/\\&/g')
+          sed "s/Basic REPLACE_WITH_BASE64_OWNER_COLON_PASSWORD/$escaped_credential/" \
+            private/admin.example.html > private/admin.html
+          cp ops/pagelove-files.txt "$RUNNER_TEMP/pagelove-files.txt"
+          printf '%s\n' 'private/admin.html' >> "$RUNNER_TEMP/pagelove-files.txt"
+          printf 'PAGELOVE_DEPLOY_MANIFEST=%s\n' "$RUNNER_TEMP/pagelove-files.txt" >> "$GITHUB_ENV"
+
+      - name: Deploy and verify the shop
+        shell: sh
+        env:
+          PAGELOVE_WEBDAV_URL: ${{ vars.PAGELOVE_WEBDAV_URL }}
+          PAGELOVE_API_KEY: ${{ secrets.PAGELOVE_API_KEY }}
+        run: ./ops/deploy-pagelove.sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP/pagelove-backup"

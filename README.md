@@ -1,77 +1,178 @@
 # Pagelove Shop
 
-The storefront is a Pagelove HTML application. Payments use Stripe-hosted
-Checkout through a celld service running on `pagelove-shop.exe.xyz`.
+Pagelove Shop is a complete storefront built from Pagelove HTML documents. It
+provides a product catalogue, session baskets, Stripe Checkout, order tracking
+and an authenticated admin area.
 
-## Payment flow
+[Open the demo storefront](https://barn-hair-4926.onpagelove.com/).
 
-1. The browser sends only product slugs, variants, quantities, and delivery
-   details. It never supplies an amount that the service trusts.
-2. The service reads current product documents from Pagelove and validates
-   availability, variants, GBP prices, quantities, and shipping.
-3. It creates an idempotent Stripe Checkout Session through an exe.dev private
-   proxy, then writes the server-priced pending order to Pagelove WebDAV.
-4. Stripe hosts the card form and redirects the shopper to their unguessable
-   order URL.
-5. The webhook handler verifies Stripe's HMAC over the raw request body and
-   checks the Session id, order id, currency, and total before marking an order
-   paid.
+## What the shop does
 
-Stripe and Pagelove API keys live in exe.dev integrations and are never stored
-in this repository, the celld VM, or a public Pagelove document. Only the
-webhook signing secret is supplied to the celld process.
+Customers can:
 
-## Admin credential
+- browse products that are currently available
+- view product images, options and prices
+- add products to a basket that belongs to their browser session
+- change quantities or remove products
+- enter delivery details and pay through Stripe Checkout
+- return to a private order confirmation page
 
-The admin pages use HTTP Basic authentication. Pagelove compares the browser's
-complete `Authorization` header with the value in `private/admin.html`.
+Administrators can:
 
-The real `private/admin.html` is ignored by Git because its `authorization`
-value is equivalent to the admin password. The committed
+- view orders and payment status
+- open the matching Checkout Session in Stripe
+- mark orders as paid, fulfilled or cancelled
+- create, edit and remove products
+- upload and reorder product images
+
+## Pagelove documents store the shop data
+
+The shop does not use a separate catalogue database. Each product is an HTML
+document under `data/products/`. Microdata fields hold the product name, stock
+status, price, options and images.
+
+Pagelove resource bindings find these records and render collections. The shop
+home page uses a binding to list products that are available. The admin pages
+use bindings to list products and orders.
+
+The shared navigation is stored once in `partials.html`. Each page includes it
+with `p:include`.
+
+## Stamped elements build detail pages
+
+Stamped elements let one route template display many records.
+
+The product route at `products/:slug.html` finds the product whose slug matches
+the URL. It stamps that product into the page with `p:stamp`. The browser then
+uses the stamped microdata to build the image gallery, option selector and buy
+panel.
+
+Order confirmation and admin order pages work in the same way. They find an
+order by its random reference and stamp the matching record into a shared page
+template.
+
+This approach provides:
+
+- one route template for every product
+- one route template for every order
+- data that remains separate from presentation
+- private source records with controlled public views
+
+Raw order documents under `data/orders/` are not public. Pagelove composition
+can stamp the matching order into its confirmation page without giving the
+customer direct access to the source document.
+
+## Transient elements hold each basket
+
+The basket is the `#basket` element in `basket.html`. Its `p:transient`
+attribute gives each visitor a separate session copy.
+
+A basket update changes only that visitor session. It does not change the
+default basket document or another customer basket.
+
+The browser reads the current transient element, changes it and writes the
+complete element back with `PUT`. A targeted `DELETE` empties the session
+basket.
+
+Transient content is not available to server-side resource bindings. The
+browser therefore sends product references and quantities to the checkout
+service. It does not send a price that the service trusts.
+
+## Checkout uses current product data
+
+[celld](https://celld.dev/) is a self-hosted runtime for Cloudflare-compatible
+Workers and distributed Durable Objects. It runs application code on
+infrastructure you control and stores durable state in an S3-compatible bucket
+you own.
+
+Checkout follows this sequence.
+
+1. The browser sends basket references, quantities and delivery details to the celld service.
+2. celld checks that the request came from the configured shop origin.
+3. celld reads each current product document from Pagelove.
+4. celld checks availability, options, quantities and prices, then calculates delivery.
+5. celld creates an idempotent Stripe Checkout Session.
+6. celld writes a server-priced pending order to Pagelove through WebDAV.
+7. The browser sends the customer to the Stripe-hosted payment page.
+8. Stripe sends the payment result to the webhook after checkout.
+9. The confirmation page stamps the order and shows its current payment status.
+
+The basket clears only after the customer returns from a successful checkout.
+A cancelled checkout leaves the basket unchanged.
+
+## The webhook has a durable responsibility
+
+The webhook must keep working after the customer closes their browser. In
+architectural terms, it has the responsibility of a durable object. It has a
+stable address, owns payment updates and outlives any one page request.
+
+This describes the service boundary, not a dependency on a particular cloud
+product.
+
+The concrete implementation uses celld on an exe.dev virtual machine:
+
+- exe.dev exposes `https://pagelove-shop.exe.xyz` and sends requests to celld
+- celld runs the JavaScript module that provides `/checkout` and `/webhook`
+- a private S3-compatible MinIO service stores the celld deployment state
+- systemd restarts celld and MinIO if either process stops
+- private exe.dev integrations add Stripe and Pagelove credentials to outbound requests
+
+Stripe sends signed events to `/webhook`. celld verifies the signature before
+reading the event. It also checks the order reference, Checkout Session,
+currency and total against the stored order.
+
+celld updates the order through Pagelove WebDAV. It uses the document ETag to
+avoid overwriting another update. Repeated or late events cannot move a paid or
+fulfilled order back to cancelled.
+
+The Stripe webhook signing secret lives in a root-owned file on the virtual
+machine. Stripe and Pagelove API credentials stay in private exe.dev
+integrations.
+
+## Admin access protects customer data
+
+The admin pages use HTTP Basic authentication. A Pagelove trigger compares the
+browser `Authorization` header with the value in `private/admin.html`.
+
+The real credential file is ignored by Git. The committed
 `private/admin.example.html` contains only an invalid placeholder.
 
-Create the private file:
+Rules deny public access to private configuration and raw order records. A
+separate trigger checks the same admin credential before product, image or
+order updates.
 
-```sh
-cp private/admin.example.html private/admin.html
-```
+## Set up the admin credential
 
-Generate a strong password and the matching header value without placing the
-password in your shell history:
+1. Generate a strong password and its complete Basic authorization value.
 
-```sh
-ADMIN_PASSWORD=$(openssl rand -hex 24)
-ADMIN_BASIC=$(printf 'owner:%s' "$ADMIN_PASSWORD" | base64 | tr -d '\n')
-printf 'Username: owner\nPassword: %s\nAuthorization: Basic %s\n' \
-  "$ADMIN_PASSWORD" "$ADMIN_BASIC"
-unset ADMIN_PASSWORD ADMIN_BASIC
-```
+   ```sh
+   ADMIN_PASSWORD=$(openssl rand -hex 24)
+   ADMIN_BASIC=$(printf 'owner:%s' "$ADMIN_PASSWORD" | base64 | tr -d '\n')
+   printf 'Username: owner\nPassword: %s\nAuthorization: Basic %s\n' \
+     "$ADMIN_PASSWORD" "$ADMIN_BASIC"
+   unset ADMIN_PASSWORD ADMIN_BASIC
+   ```
 
-Save the generated password in a password manager. In `private/admin.html`:
+2. Save the generated password in a password manager.
 
-1. replace `Basic REPLACE_WITH_BASE64_OWNER_COLON_PASSWORD` with the complete
-   generated `Basic ...` value
-2. leave the `username` value as `owner`, or regenerate the header using the
-   same username if you change it
+3. Add the complete `Basic ...` value to the `production` GitHub Environment as
+   a secret named `PAGELOVE_ADMIN_AUTHORIZATION`.
 
-Base64 is encoding, not encryption. Never commit, paste into an issue, or share
-the generated header value.
+GitHub Actions creates `private/admin.html` temporarily during deployment. The
+value is not written to the repository. If the secret is not set, an existing
+admin credential on Pagelove is left unchanged.
 
-Deploy the credential separately from normal application files. From the
-project copy on the `pagelove-shop` VM:
+For a terminal deployment, copy `private/admin.example.html` to
+`private/admin.html`, replace the placeholder with the complete value, and add
+`private/admin.html` to `PAGELOVE_DEPLOY_FILES`. The real file remains ignored
+by Git.
 
-```sh
-PAGELOVE_DEPLOY_FILES='private/admin.html' ./ops/deploy-pagelove.sh \
-  /home/exedev/pagelove-shop \
-  /home/exedev/pagelove-deploy-backups/admin-credential
-```
+Base64 is encoding, not encryption. Never commit or share the generated header
+value.
 
-Copy the ignored `private/admin.html` to that project directory before running
-the command. The deployment script backs up the existing WebDAV document and
-verifies the replacement by reading it back. Do not add the credential file to
-the default deployment list.
+## Test the checkout service locally
 
-## Local verification
+Install the worker dependencies and run the checks:
 
 ```sh
 cd worker
@@ -79,20 +180,172 @@ npm install
 npm run check
 ```
 
-See [`worker/README.md`](worker/README.md) for service configuration and
-[`ops/`](ops/) for the exe.dev systemd setup.
+The checks cover input validation, authoritative pricing, order documents,
+Stripe form data, dashboard links and webhook signature verification.
 
-## Pagelove deployment
+## Deploy the application
 
-Deploy application files through WebDAV, preserving their paths. Never deploy
-the live `data/orders/` directory from a source checkout: it contains customer
-orders and is deliberately absent locally. The Stripe integration changes these
-Pagelove files:
+The repository includes a GitHub Actions workflow that deploys the Pagelove
+application through WebDAV. It runs after every push to `main`. You can also run
+it manually from the repository's **Actions** page.
 
-- `admin-auth.html`
-- `checkout.html`
-- `js/shop.mjs`
-- `rules.html`
+### Set up a fork
 
-The checkout endpoint in `checkout.html` is
-`https://pagelove-shop.exe.xyz`.
+You must own the fork, or have admin access to it, to configure its environment.
+Have these values ready:
+
+- the WebDAV URL for your Pagelove host
+- a Pagelove API key beginning with `pk_`
+- the complete admin `Basic ...` authorization value, if you want to use the
+  admin area
+
+#### Create the environment
+
+1. [Fork this repository](https://github.com/pagelove/pagelove-shop/fork).
+
+2. Open the main page of your fork on GitHub.
+
+3. Select **Settings** below the repository name. If **Settings** is hidden,
+   open the repository navigation dropdown and select **Settings**.
+
+4. Select **Environments** in the left sidebar.
+
+5. Select **New environment**.
+
+6. Enter `production` as the environment name. The workflow expects this exact
+   name.
+
+7. Select **Configure environment**.
+
+You can add required reviewers or restrict deployment branches on this screen.
+These protections are optional. If you restrict branches, allow `main` because
+that is the branch the automatic deployment uses.
+
+#### Add the WebDAV URL
+
+1. On the `production` environment page, find **Environment variables**.
+
+2. Select **Add variable**.
+
+3. Enter `PAGELOVE_WEBDAV_URL` in the **Name** field.
+
+4. Paste the complete WebDAV URL from the Pagelove console into the **Value**
+   field.
+
+5. Select **Add variable**.
+
+The WebDAV URL is configuration, not a password. Add it as a variable, not a
+secret.
+
+#### Add the Pagelove API key
+
+1. On the same environment page, find **Environment secrets**.
+
+2. Select **Add secret**.
+
+3. Enter `PAGELOVE_API_KEY` in the **Name** field.
+
+4. Paste the Pagelove API key into the **Value** field. It must begin with
+   `pk_`.
+
+5. Select **Add secret**.
+
+Do not add the API key as an environment variable. Variables are not masked in
+workflow output.
+
+#### Add the admin credential
+
+This secret is optional. Without it, a new deployment has no usable admin
+login. An existing admin credential on Pagelove is left unchanged.
+
+1. Under **Environment secrets**, select **Add secret** again.
+
+2. Enter `PAGELOVE_ADMIN_AUTHORIZATION` in the **Name** field.
+
+3. Paste the complete generated value, including the `Basic ` prefix, into the
+   **Value** field.
+
+4. Select **Add secret**.
+
+#### Run the first deployment
+
+1. Select **Actions** below the repository name.
+
+2. If GitHub says workflows are disabled for the fork, use the button on that
+   page to enable them.
+
+3. Select **Deploy to Pagelove** in the workflow list on the left.
+
+4. If the workflow itself is disabled, open its menu and select **Enable
+   workflow**.
+
+5. Select **Run workflow** above the list of workflow runs.
+
+6. Select the `main` branch, then select **Run workflow**.
+
+Open the new workflow run to follow its progress. A successful run backs up the
+existing application files, deploys the new versions and verifies them by
+reading them back. Later pushes to `main` deploy automatically.
+
+GitHub only makes
+[environment secrets and variables](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)
+available to jobs that use that environment. The workflow does not run for
+pull requests. The API key is sent to Pagelove as a Bearer authorization header
+and is not printed or stored in the repository.
+
+### What gets deployed
+
+[`ops/pagelove-files.txt`](ops/pagelove-files.txt) lists the application files
+that GitHub Actions deploys. [`ops/pagelove-directories.txt`](ops/pagelove-directories.txt)
+lists empty writable collections that a new shop needs, including the order and
+image collections.
+
+The deployment script:
+
+- creates missing WebDAV collections
+- backs up files that already exist
+- uploads the complete replacement files
+- reads every file back and checks that it matches
+
+It does not deploy local order data. The live `data/orders/` collection contains
+customer orders and is deliberately ignored by Git.
+
+### Deploy from a terminal
+
+You can run the same deployment script without GitHub Actions. Set the WebDAV
+URL, enter the API key without putting it in shell history, then run:
+
+```sh
+export PAGELOVE_WEBDAV_URL='https://YOUR-WEBDAV-URL/'
+printf 'Pagelove API key: '
+read -r -s PAGELOVE_API_KEY
+printf '\n'
+export PAGELOVE_API_KEY
+./ops/deploy-pagelove.sh \
+  . \
+  .deployment-backups/manual
+unset PAGELOVE_API_KEY PAGELOVE_WEBDAV_URL
+```
+
+Use the [celld deployment guide](worker/README.md) to install or update the
+checkout service on exe.dev. The scripts in [`ops/`](ops/) configure celld,
+MinIO, systemd and the Stripe webhook. The GitHub Actions workflow deploys the
+Pagelove application only; each fork must configure its own checkout service to
+take payments.
+
+## Project structure
+
+The main directories and files are:
+
+- `data/products/` contains product records
+- `products/:slug.html` stamps a product into its public route
+- `basket.html` contains the transient basket element
+- `orders/:id.html` stamps an order into its confirmation route
+- `admin/` contains order and product management pages
+- `js/shop.mjs` provides the storefront and admin browser behaviour
+- `worker/` contains the celld checkout and webhook module
+- `ops/` contains exe.dev installation and deployment scripts
+- `.github/workflows/` contains the automatic Pagelove deployment workflow
+- `rules.html` defines access rules
+- `constraints.html` limits the accepted order document shape
+- `admin-auth.html` applies the admin credential checks

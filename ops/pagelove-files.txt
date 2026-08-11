@@ -1,0 +1,21 @@
+# Pagelove application files deployed by default.
+admin/index.html
+admin/orders/:id.html
+admin/products.html
+basket.html
+checkout.html
+constraints.html
+css/shop.css
+data/products/cap.html
+data/products/hoodie.html
+data/products/mug.html
+data/products/stickers.html
+data/products/tee.html
+data/products/tote.html
+index.html
+js/shop.mjs
+orders/:id.html
+partials.html
+products/:slug.html
+admin-auth.html
+rules.html
