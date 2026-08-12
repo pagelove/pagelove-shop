@@ -36,6 +36,12 @@ Pagelove resource bindings find these records and render collections. The shop
 home page uses a binding to list products that are available. The admin pages
 use bindings to list products and orders.
 
+The HTML Microdata definitions in `schemas.html` describe and validate the
+shop's products, settings, orders, order lines and private admin credential.
+They also define the permitted availability, currency, payment provider and
+payment status values. Pagelove discovers these definitions from the deployed
+HTML; there is no separate schema language or JSON schema file.
+
 The shared navigation is stored once in `partials.html`. Each page includes it
 with `p:include`.
 
@@ -383,3 +389,4 @@ The main directories and files are:
 - `rules.html` defines access rules
 - `constraints.html` limits the accepted order document shape
 - `admin-auth.html` applies the admin credential checks
+- `schemas.html` defines the shop's Microdata types and enums

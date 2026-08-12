@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>shop schemas</title></head>
+<body>
+  <!-- These enum URLs are used by the schemas below. Keeping the permitted
+       values in Microdata gives Pagelove and other HTML-aware clients the same
+       vocabulary as the storefront, admin UI and checkout service. -->
+  <div hidden itemscope itemtype="https://schema.host/Enum">
+    <meta itemprop="name" content="https://shop.example/ProductAvailability">
+    <meta itemprop="value" content="yes">
+    <meta itemprop="value" content="no">
+  </div>
+
+  <div hidden itemscope itemtype="https://schema.host/Enum">
+    <meta itemprop="name" content="https://shop.example/Currency">
+    <meta itemprop="value" content="GBP">
+  </div>
+
+  <div hidden itemscope itemtype="https://schema.host/Enum">
+    <meta itemprop="name" content="https://shop.example/PaymentProvider">
+    <meta itemprop="value" content="stripe">
+  </div>
+
+  <div hidden itemscope itemtype="https://schema.host/Enum">
+    <meta itemprop="name" content="https://shop.example/PaymentStatus">
+    <meta itemprop="value" content="pending">
+    <meta itemprop="value" content="paid">
+    <meta itemprop="value" content="fulfilled">
+    <meta itemprop="value" content="cancelled">
+  </div>
+
+  <section hidden itemscope itemtype="https://pagelove.org/Schema">
+    <meta itemprop="type" content="https://shop.example/Product">
+    <meta itemprop="name" content="Product">
+    <meta itemprop="description" content="A product that can be listed and purchased in the shop.">
+
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="slug">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="unique" content="true">
+      <meta itemprop="description" content="Stable product identifier used in public product URLs.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="sku">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="unique" content="true">
+      <meta itemprop="description" content="Merchant stock-keeping unit.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="price">
+      <meta itemprop="type" content="https://schema.host/Integer">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="description" content="Unit price in the currency's smallest unit; pence for GBP.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="priceDisplay">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="description" content="Human-readable unit price rendered by catalogue templates.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="currency">
+      <meta itemprop="type" content="https://shop.example/Currency">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="category">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="emoji">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="description" content="Fallback artwork used when the product has no images.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="available">
+      <meta itemprop="type" content="https://shop.example/ProductAvailability">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="variant">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="0..n">
+      <meta itemprop="description" content="A purchasable option such as size or capacity.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="image">
+      <!-- Product uploads are stored as origin-relative paths such as
+           /images/product-abc.webp, whereas schema.host/URL requires a scheme. -->
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="0..n">
+      <meta itemprop="description" content="Product image URL; document order determines display order.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="name">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="description">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+  </section>
+
+  <section hidden itemscope itemtype="https://pagelove.org/Schema">
+    <meta itemprop="type" content="https://shop.example/ShopSettings">
+    <meta itemprop="name" content="Shop settings">
+    <meta itemprop="description" content="Administrator-managed configuration used by the storefront.">
+
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="checkoutEndpoint">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="description" content="Public celld origin, or an empty value until checkout is configured.">
+    </div>
+  </section>
+
+  <section hidden itemscope itemtype="https://pagelove.org/Schema">
+    <meta itemprop="type" content="https://shop.example/OrderLine">
+    <meta itemprop="name" content="Order line">
+    <meta itemprop="description" content="A server-priced product line captured when an order is created.">
+
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="sku">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="slug">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="name">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="variant">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="unitPrice">
+      <meta itemprop="type" content="https://schema.host/Integer">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="description" content="Authoritative unit price in pence at checkout.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="quantity">
+      <meta itemprop="type" content="https://schema.host/Integer">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="lineTotal">
+      <meta itemprop="type" content="https://schema.host/Integer">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="description" content="Authoritative line total in pence.">
+    </div>
+  </section>
+
+  <section hidden itemscope itemtype="https://pagelove.org/Schema">
+    <meta itemprop="type" content="https://shop.example/Order">
+    <meta itemprop="name" content="Order">
+    <meta itemprop="description" content="A server-priced purchase and its Stripe payment state.">
+
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="orderId">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="unique" content="true">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="placedAt">
+      <meta itemprop="type" content="https://schema.host/DateTime">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="currency">
+      <meta itemprop="type" content="https://shop.example/Currency">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="subtotal">
+      <meta itemprop="type" content="https://schema.host/Integer">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="shipping">
+      <meta itemprop="type" content="https://schema.host/Integer">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="amountTotal">
+      <meta itemprop="type" content="https://schema.host/Integer">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="paymentStatus">
+      <meta itemprop="type" content="https://shop.example/PaymentStatus">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="paymentProvider">
+      <meta itemprop="type" content="https://shop.example/PaymentProvider">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="paymentReference">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="description" content="Provider-specific payment reference; a Stripe Checkout Session ID.">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="email">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="customerName">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="line1">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="city">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="postcode">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="country">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <!-- The current order document wraps its typed OrderLine items in an ul.
+         This declaration governs the required wrapper; each nested OrderLine is
+         validated independently by the OrderLine schema above. -->
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="lines">
+      <meta itemprop="cardinality" content="1..1">
+      <meta itemprop="description" content="Container for one or more typed order-line items.">
+    </div>
+  </section>
+
+  <section hidden itemscope itemtype="https://pagelove.org/Schema">
+    <meta itemprop="type" content="https://shop.example/AdminCredential">
+    <meta itemprop="name" content="Admin credential">
+    <meta itemprop="description" content="Private HTTP Basic credential used by the admin trigger.">
+
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="authorization">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+    <div itemprop="property" itemscope itemtype="https://pagelove.org/Property">
+      <meta itemprop="name" content="username">
+      <meta itemprop="type" content="https://schema.host/Text">
+      <meta itemprop="cardinality" content="1..1">
+    </div>
+  </section>
+</body>
+</html>

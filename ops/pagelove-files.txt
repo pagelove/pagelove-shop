@@ -20,3 +20,4 @@ partials.html
 products/:slug.html
 admin-auth.html
 rules.html
+schemas.html
