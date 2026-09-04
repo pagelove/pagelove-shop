@@ -37,7 +37,7 @@ ADMIN_BASIC_VALUE=$admin_basic awk '
     sub(placeholder, replacement)
     print
   }
-' "$PROJECT_DIR/private/admin.example.html" > "$STAGING_DIR/private/admin.html"
+' "$PROJECT_DIR/site/private/admin.example.html" > "$STAGING_DIR/private/admin.html"
 unset admin_basic ADMIN_BASIC_VALUE
 chmod 0600 "$STAGING_DIR/private/admin.html"
 
