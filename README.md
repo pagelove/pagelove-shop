@@ -374,7 +374,23 @@ take payments.
 
 ## Project structure
 
-The main directories and files are:
+Everything the shop serves lives under `site/`, and everything at the
+repository root describes or deploys it. That split is what lets the console
+install this repository as a template: it copies the contents of `site/` to a
+host's root and ignores the rest.
+
+So `site/index.html` becomes `/index.html` on the host, and `site/css/shop.css`
+becomes `/css/shop.css`.
+
+At the repository root:
+
+- `pagelove.html` is the template manifest, naming and describing the shop
+- `ops/` contains exe.dev installation and deployment scripts
+- `worker/` contains the celld checkout and webhook module
+- `.github/workflows/` contains the automatic Pagelove deployment workflow
+- `README.md` and `LICENSE`
+
+Under `site/`:
 
 - `data/products/` contains product records
 - `products/:slug.html` stamps a product into its public route
@@ -383,10 +399,12 @@ The main directories and files are:
 - `admin/` contains order and product management pages
 - `data/settings/shop.html` is the seed for admin-managed shop settings
 - `js/shop.mjs` provides the storefront and admin browser behaviour
-- `worker/` contains the celld checkout and webhook module
-- `ops/` contains exe.dev installation and deployment scripts
-- `.github/workflows/` contains the automatic Pagelove deployment workflow
 - `rules.html` defines access rules
 - `constraints.html` limits the accepted order document shape
 - `admin-auth.html` applies the admin credential checks
 - `schemas.html` defines the shop's Microdata types and enums
+
+The deployment manifests in `ops/` list paths relative to `site/`, and the
+workflow passes `site/` to the deploy script as its project directory. So the
+paths in `ops/pagelove-files.txt` are unchanged by the move, and a file added
+to the shop is still listed there the same way.

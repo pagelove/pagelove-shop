@@ -53,7 +53,14 @@ jobs:
         env:
           PAGELOVE_WEBDAV_URL: ${{ vars.PAGELOVE_WEBDAV_URL }}
           PAGELOVE_API_KEY: ${{ secrets.PAGELOVE_API_KEY }}
-        run: ./ops/deploy-pagelove.sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP/pagelove-backup"
+          # The shop's files live under site/, so that the repository can also
+          # be installed as a Pagelove template (everything in site/ is copied
+          # to the host root). The manifests stay at the repository root and
+          # keep their site-relative paths, so they are pointed at explicitly.
+          PAGELOVE_DEPLOY_MANIFEST: ${{ github.workspace }}/ops/pagelove-files.txt
+          PAGELOVE_DIRECTORIES_MANIFEST: ${{ github.workspace }}/ops/pagelove-directories.txt
+          PAGELOVE_SEED_MANIFEST: ${{ github.workspace }}/ops/pagelove-seed-files.txt
+        run: ./ops/deploy-pagelove.sh "$GITHUB_WORKSPACE/site" "$RUNNER_TEMP/pagelove-backup"
 
       - name: Deploy the optional admin password
         shell: sh
